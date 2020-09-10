@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "rcp.h"
+#include "rpc.h"
 
 
 int getop(char s[]){
