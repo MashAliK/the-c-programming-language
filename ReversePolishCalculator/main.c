@@ -5,7 +5,7 @@
 /*Modified version of the reverse polish calculator as prompted
 by the exercises in the book (mainly chapter 4). Added functionality
 includes modulo operator(%), negative numbers, sin, exp pow and variables
-can be assigned to a letter the user using the construction:
+which can be assigned to a letter by the user using the construction:
 (letter) (value) (equals sign) */
 
 int main(void){
