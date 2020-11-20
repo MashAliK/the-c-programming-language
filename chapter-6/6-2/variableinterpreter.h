@@ -1,9 +1,7 @@
 #define DEF 6
 #define MAXVAR 100
 
-char *identifiers[] = {"int",
-        "double","float","char",
-        "void"};
+
 struct vargroup{
     char *varname;
     struct vargroup *l;
