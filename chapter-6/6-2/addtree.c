@@ -17,10 +17,10 @@ struct vargroup *addgroup(struct vargroup *s, char *w){
         s = (struct vargroup*) malloc(sizeof(struct vargroup));
         s->varname = strvar(w);
         s->l = s->r = NULL;
-    }else if((cond = strncmp(s->varname,w,cmpval))<0)
-        addgroup(s->l,w);
-    else
-        addgroup(s->r,w);
+    }else if((cond = strcmp(s->varname,w))<0)
+        s->l = addgroup(s->l,w);
+    else if(cond > 0)
+        s->r = addgroup(s->r,w);
     return s;
 }
 
@@ -31,11 +31,11 @@ struct mastertree *addmaintree(struct mastertree *p, char *w){
         p->root = addgroup(NULL, w);
         p->l = p->r = NULL;
     }else if((cond = strncmp(p->root->varname,w,cmpval))==0)
-        addgroup(p->root,w);
+        p->root = addgroup(p->root,w);
     else if(cond < 0)
-        addmaintree(p->l,w);
+        p->l = addmaintree(p->l,w);
     else
-        addmaintree(p->r,w);
+        p->r = addmaintree(p->r,w);
     return p;
 }
 

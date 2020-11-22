@@ -51,18 +51,18 @@ int isvar(char *w){
 
 void printtree(struct vargroup *s){
     if(s!=NULL){
-       printtree(s->l);
-       printf("%s\n",s->varname);
        printtree(s->r);
+       printf("%s\n",s->varname);
+       printtree(s->l);
     }
 }
 
 void printall(struct mastertree *p){
     if(p!=NULL){
-       printall(p->l);
+       printall(p->r);
        printf("\n");
        printtree(p->root);
-       printall(p->r);
+       printall(p->l);
     }
 }
 
