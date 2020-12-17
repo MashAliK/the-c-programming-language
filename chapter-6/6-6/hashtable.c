@@ -34,7 +34,7 @@ char *wrdstr(char *s){
     return p;
 }
 
-struct nlist *install(char *w, char *r){
+struct nlist *install(char *w, char *r, int n){
     struct nlist *p;
     unsigned hashval;
     if((p = lookup(w)) == NULL){
@@ -43,6 +43,7 @@ struct nlist *install(char *w, char *r){
             return NULL;
         hashval = hash(w);
         p->next = hashtab[hashval];
+        p->deflen = n;
         hashtab[hashval] = p;
     }else
         free((void *) p->defn);
