@@ -1,13 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #define HASHSIZE 101
-
-struct nlist{
-    struct nlist *next;
-    char *name;
-    char *defn;
-    int deflen;
-};
+#include "preprocessor.h"
 
 static struct nlist *hashtab[HASHSIZE];
 
