@@ -5,82 +5,84 @@
 #define getobject (objstate=getobj(obj,&objlen))
 
 int main(){
-    int ignstate, c, curlen, linenum, objstate, objlen, err = VALID;
+    int ignstate, c, curlen, linenum, objstate, objlen, err = VALID, defstate, i;
     char obj[MAXWORD], def[MAXWORD], line[MAXLINE], program[NUMLINE][MAXLINE];
     struct nlist *defp;
-    for(linenum = 0, ignstate = NONE; (c = getch()) != EOF && err == FALSE && linenum < MAXLINE; linenum++){
+    for(linenum = 0, ignstate = NONE; err == VALID && (c = getch()) != EOF && linenum < MAXLINE; linenum++){
+        line[0] = '\0';
         curlen = 0;
-        if(c == '#' && ignstate==NONE){  //check for and handle definitions
-            if(getobject == WORD){      //handle error in case of invalid definition
-                if(strcmp(obj,"define") == 0){
-                    if(getobject == BLANK){
-                        if(getobject == WORD){
-                            strcpy(def, obj);
-                            if(getobject == BLANK){
-                                if(getobject == WORD || objstate == WORDNUM)
-                                    install(def, obj, objlen);
-                                else
-                                    err = INVDEF;
-                            }else
-                                pushobj(obj, objlen, objstate);
-                        }
-                        else
-                            err = INVDEF;
-                    }else
-                        pushobj(obj, objlen, objstate);
-                }
-            }else
-                pushobj(obj, objlen, objstate);
-        }else{
+        if(c == '#')
+            err = createdef(obj, line, &curlen);
+        else
             ungetch(c);
-        }
-        while(getobject != NEWL && err == VALID){
-            if(ignstate == NONE && objstate == WORD){
-                if((defp=lookup(obj)) != NULL){
-                    strcpy(obj,defp->defn);
-                    objlen = defp->deflen;
-                }
+        while(err == VALID && getobject != NEWL){
+            if(ignstate == NONE){
+                if(objstate == WORD){
+                    if((defp=lookup(obj)) != NULL){
+                        strcpy(obj,defp->defn);
+                        objlen = defp->deflen;
+                    }
+                }else if(objstate >= QUOTE && objstate <= SINCOM)
+                    ignstate = objstate;
             }else if(ignstate != SINCOM && ignstate == objstate) //single comment ignore state is only
                 ignstate = NONE;                                //only set off after newline
             if((curlen+=objlen) > MAXLINE)
-                err = EXCEED;
-            else{
+                err = EXCEEDL;
+            else
                 strcat(line,obj);
-            }
         }
-        line[curlen++] = '\n';
-        line[curlen] = '\0';
-        if(ignstate == SINCOM)
-                ignstate = NONE;
-        strcpy(program[linenum],line);
+        if(err != VALID){
+            if(err == SKIP){
+                err = VALID;
+                linenum--;
+            }else
+                errhndl(err, linenum);
+        }
+        else{
+            line[curlen] = '\0';
+            if(ignstate == SINCOM)
+                    ignstate = NONE;
+            strcpy(program[linenum],line);
+        }
+    }
+    if(err == VALID){
+        for(i = 0; i < linenum; i++)
+            printf("%s\n",program[i]);
     }
     return 0;
 }
 
-int createdef(char *obj, int objstate, int objlen)){
-    stringhold[MAXLINE];
-    if(getobject == WORD && strcmp(obj,"define")==0){
-
-
+int createdef(char *obj, char *line, int* curl){
+    char strhld[MAXLINE];
+    struct nlist *newdef;
+    int objstate, objlen;
+    strhld[0] = '#';
+    strhld[1] = '\0';
+    getobject;
+    strcpy(line,strcat(strhld,obj));
+    *curl = 1+objlen; //'1+' for '#'
+    if(!(objstate == WORD && strcmp(obj,"define")==0)){
+        return VALID;
     }else{
-
+        if(getobject != BLANK){
+            strcat(line,obj);
+            *curl += objlen;
+            return VALID;
+        }
     }
-    return FALSE;
+    if(getobject != WORD){
+        return INVDEF;
+    }else
+        strcpy(strhld, obj);
+    if(getobject == BLANK && (getobject == WORD || objstate == WORDNUM)){
+        newdef = install(strhld, obj, objlen);
+        if(getobject == NEWL)
+            return SKIP;
+    }
+    return INVDEF;
 }
 
-struct{
-    char wrd[MAXWORD];
-    char len;
-    char state;
-}objstack;
-
-
 int getobj(char s[], int *len){
-    if(objstack.state != NONE){
-        *len = objstack.len;
-        objstack.state = NONE;
-        return objstack.state;
-    }
     int c, nonum = TRUE, i;
     if(isalnum(c=getch())){
         i = 0;
@@ -127,10 +129,18 @@ int getobj(char s[], int *len){
     }
 }
 
-
-
-void pushobj(char *s, int len, int state){
-    strcpy(objstack.wrd, s);
-    objstack.len = len;
-    objstack.state = state;
+void errhndl(int error, int ln){
+    printf("Error on line %d: ",ln+1);
+    switch(error){
+    case(EXCEEDW):
+        printf("Number of characters in word exceeds maximum allowed (%d characters)\n",MAXWORD);
+        break;
+    case(EXCEEDL):
+        printf("Number of characters in line exceeds maximum allowed (%d characters)\n",MAXLINE);
+        break;
+    case(INVDEF):
+        printf("Invalid use of '#define' preprocessor (Definition can only contain alphabets\n\
+                 and text to replace can only contain alphabets and/or numbers)\n");
+        break;
+    }
 }

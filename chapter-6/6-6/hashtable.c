@@ -43,6 +43,7 @@ struct nlist *install(char *w, char *r, int n){
         free((void *) p->defn);
     if((p->defn = wrdstr(r)) == NULL)
         return NULL;
+    p->deflen = n;
     return p;
 }
 

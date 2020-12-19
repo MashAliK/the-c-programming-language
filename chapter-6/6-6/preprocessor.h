@@ -2,7 +2,7 @@
 #define MAXLINE 1000
 #define NUMLINE 100
 enum {FALSE, TRUE};
-enum {VALID, EXCEED, INVDEF};
+enum {VALID, EXCEEDW, EXCEEDL, INVDEF, SKIP};
 enum {NONE, QUOTE, SINQUOTE, COM, SINCOM, NEWL, WORD, WORDNUM, BLANK, OTH};
 
 struct nlist{
@@ -11,9 +11,10 @@ struct nlist{
     char *defn;
     int deflen;
 };
-struct nlist *install(char*, char *, int);
+struct nlist *install(char*, char*, int);
 struct nlist *lookup(char*);
 int getch(void);
 void ungetch(int);
 int getobj(char s[], int *len);
-void pushobj(char *s, int len, int state);
+int createdef(char*,char*, int*);
+void errhndl(int, int);
