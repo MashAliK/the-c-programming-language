@@ -26,7 +26,7 @@ int main(int argc, char *argv[]){
         }else{
             while(argc-- > 2){
                 if((fp = fopen(*argv, "r")) == NULL){
-                    printf(stderr, "%s: can't open %s\n",prog, *argv);
+                    fprintf(stderr, "%s: can't open %s\n",prog, *argv);
                     exit(1);
                 }else{
                     for(i = 1; fgets(line, MAXLINE, fp); i++){
