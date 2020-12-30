@@ -139,25 +139,36 @@ FILE _iob[OPEN_MAX]={
     {0, (char*) 0, (char*) 0, {0,1,1,0,0}, 2 }
 };
 
+int fseek(FILE *fp, long l, int i){
+    if(fp->flag._ERR == 1 || fp->flag._EOF == 1)
+        return NULL;
+    if(fp->flag._WRITE == 1 && fp->flag._UNBUF == 0)
+        fflush(fp);
+    else if(fp->flag._READ){
+        fp->cnt = 0;
+        fp->ptr = fp->base;
+    }
+    return (lseek(fp->fd, l, i) < 0);
+}
+
 int main(int argc, char *argv[]){
     char c, *prog;
     prog = *argv++;
-    FILE *fp;
-    if(argc == 1){
-        while((c=getc(stdin)) != EOF){
-            putc(c,stdout);
-        }
-        fclose(stdout);
-    }
-    else if(argc == 2){
-        if((fp=fopen(*argv, "w")) == NULL){
+    FILE *fp1, *fp2;
+    if(argc != 3)
+        exit(0);
+    else{
+        if((fp1=fopen(*argv, "r")) == NULL || (fp2=fopen(*++argv, "w")) == NULL){
             exit(1);
         }
-        while((c=getc(stdin)) != EOF){
-            if(putc(c, fp) == EOF)
-                exit(2);
-        }
-        fclose(fp);
+        while((c=getc(fp1)) != EOF)
+            putc(c, fp2);
+        if(fseek(fp1, 0, 0) != 0 || fseek(fp2, 0, 2) != 0) //test read and write
+            exit(2);
+        while((c=getc(fp1)) != EOF)
+            putc(c, fp2);
+        fclose(fp1);
+        fclose(fp2);
     }
     exit(0);
 }
